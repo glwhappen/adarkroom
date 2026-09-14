@@ -1,0 +1,259 @@
+/*
+ * 物品图标的颜色。一个物品一行，改这里的 color 就能单独换色。
+ * 图标本体（形状）在 img/icons.svg，由 tools/icons.json 决定用哪张图。
+ * 这里的 color 靠 sprite 里的 fill="currentColor" 生效。
+ *
+ * 配色原则：取中间调 + 高饱和，保证默认白底和夜间模式（#272823 深底）都看得清。
+ * 所以「骨头、铁、钢」这类本来偏白的物品也用带色相的灰（骨黄 / 铁蓝灰），
+ * 不要用 #fff 或接近白的颜色 —— 白底上会直接看不见。
+ */
+
+svg.icon {
+	display: inline-block;
+	width: 1.05em;
+	height: 1.05em;
+	/* 图标比汉字略大一点更清楚；-0.13em 让它的视觉中心和文字对齐 */
+	vertical-align: -0.13em;
+	margin-right: 0.35em;
+	flex: none;
+	fill: currentColor;
+}
+
+/* ---------- 基础资源 ---------- */
+.icon-wood {
+	color: #c07f3a;
+}
+
+.icon-fur {
+	color: #c99a5b;
+}
+
+.icon-meat {
+	color: #cf5348;
+}
+
+.icon-bait {
+	color: #7cb342;
+}
+
+.icon-scales {
+	color: #2fa89b;
+}
+
+.icon-teeth {
+	color: #b3a684;
+}
+
+.icon-cloth {
+	color: #b39267;
+}
+
+.icon-leather {
+	color: #96603a;
+}
+
+.icon-charm {
+	color: #a670e8;
+}
+
+/* ---------- 材料与制成品 ---------- */
+.icon-iron {
+	color: #93a0ae;
+}
+
+.icon-cured-meat {
+	color: #b5623c;
+}
+
+.icon-sulphur {
+	color: #c9ad2e;
+}
+
+.icon-coal {
+	color: #7d7d87;
+}
+
+.icon-steel {
+	color: #a3b2c2;
+}
+
+.icon-medicine {
+	color: #35b98a;
+}
+
+.icon-bullets {
+	color: #c99a3f;
+}
+
+.icon-energy-cell {
+	color: #2fa9e0;
+}
+
+.icon-alien-alloy {
+	color: #9b5fd0;
+}
+
+/* ---------- 工具与载具 ---------- */
+.icon-torch {
+	color: #ef9c2e;
+}
+
+.icon-waterskin,
+.icon-water-tank {
+	color: #3fa0cf;
+}
+
+.icon-cask {
+	color: #a06a34;
+}
+
+.icon-bone-spear {
+	color: #b3a684;
+}
+
+.icon-rucksack,
+.icon-bolas {
+	color: #a87f45;
+}
+
+.icon-wagon {
+	color: #a06a34;
+}
+
+.icon-convoy {
+	color: #b8853c;
+}
+
+/* ---------- 护甲 ---------- */
+.icon-l-armour {
+	color: #96603a;
+}
+
+.icon-i-armour {
+	color: #93a0ae;
+}
+
+.icon-s-armour {
+	color: #a3b2c2;
+}
+
+/* ---------- 武器 ---------- */
+.icon-iron-sword {
+	color: #93a0ae;
+}
+
+.icon-steel-sword {
+	color: #a3b2c2;
+}
+
+.icon-rifle {
+	color: #8a7450;
+}
+
+.icon-laser-rifle {
+	color: #2fa9e0;
+}
+
+.icon-grenade {
+	color: #5f9440;
+}
+
+.icon-bayonet {
+	color: #a3b2c2;
+}
+
+.icon-compass {
+	color: #c99a3f;
+}
+
+/* ---------- 建筑（建造按钮上用） ---------- */
+.icon-trap {
+	color: #b5793a;
+}
+
+.icon-baited-trap {
+	color: #8a6a3a;
+}
+
+.icon-cart {
+	color: #b5793a;
+}
+
+.icon-hut {
+	color: #c99a5b;
+}
+
+.icon-lodge {
+	color: #7cb342;
+}
+
+.icon-trading-post {
+	color: #c99a3f;
+}
+
+.icon-tannery {
+	color: #96603a;
+}
+
+.icon-smokehouse {
+	color: #cf5348;
+}
+
+.icon-workshop {
+	color: #93a0ae;
+}
+
+.icon-steelworks {
+	color: #a3b2c2;
+}
+
+.icon-armoury {
+	color: #cf6a3f;
+}
+
+/* ---------- 制造机 / 后期物品 ---------- */
+.icon-cargo-drone {
+	color: #8fa1b3;
+}
+
+.icon-fleet-beacon {
+	color: #cf6a3f;
+}
+
+.icon-fluid {
+	color: #3fa0cf;
+}
+
+.icon-fluid-recycler {
+	color: #35b98a;
+}
+
+.icon-energy-blade {
+	color: #6ad0ff;
+}
+
+.icon-kinetic-armour {
+	color: #9b5fd0;
+}
+
+.icon-disruptor {
+	color: #cf5348;
+}
+
+.icon-hypo,
+.icon-stim {
+	color: #35b98a;
+}
+
+.icon-plasma-rifle {
+	color: #b07de0;
+}
+
+.icon-glowstone {
+	color: #e0c04a;
+}
+
+/* 灰掉（材料不够）的按钮，图标跟着一起变淡 */
+div.button.disabled svg.icon {
+	opacity: 0.45;
+}

@@ -154,6 +154,7 @@ const Fabricator = {
             id: 'fabricate_' + key,
             cost: value.cost(),
             text: name,
+            icon: key,
             click: Fabricator.fabricate,
             width: '150px',
             ttPos: section.children().length > 10 ? 'top right' : 'bottom right'
@@ -165,7 +166,9 @@ const Fabricator = {
         costTooltip.empty();
         const cost = value.cost();
         for (const [ resource, num ] of Object.entries(cost)) {
-          $("<div>").addClass('row_key').text(_(resource)).appendTo(costTooltip);
+          const cKey = $("<div>").addClass('row_key').text(_(resource));
+          Icons.prepend(cKey, resource);
+          cKey.appendTo(costTooltip);
           $("<div>").addClass('row_val').text(num).appendTo(costTooltip);
         }
         if (max && value.maxMsg && !value.button.hasClass('disabled')) {
@@ -201,7 +204,9 @@ const Fabricator = {
       let r = $('#' + id);
       if($SM.get(`character.blueprints["${k}"]`) && r.length === 0) {
         r = $('<div>').attr('id', id).addClass('blueprintRow').appendTo(blueprints);
-        $('<div>').addClass('row_key').text(_(k)).appendTo(r);
+        var bKey = $('<div>').addClass('row_key').text(_(k));
+        Icons.prepend(bKey, k.replace(/ blueprint$/, ''));   // 蓝图名字去掉“blueprint”前缀后对到物品图标
+        bKey.appendTo(r);
       }
     }
     

@@ -25,6 +25,9 @@ var Button = {
 
 		el.append($("<div>").addClass('cooldown'));
 
+		// 文字前面挂个小图标（options.icon 传物品 key，跟库存里是同一套图标）
+		if (options.icon) Icons.prepend(el, options.icon);
+
 		// waiting for expiry of residual cooldown detected in state
 		Button.cooldown(el, 'state');
 
@@ -32,7 +35,9 @@ var Button = {
 			var ttPos = options.ttPos ? options.ttPos : "bottom right";
 			var costTooltip = $('<div>').addClass('tooltip ' + ttPos);
 			for(var k in options.cost) {
-				$("<div>").addClass('row_key').text(_(k)).appendTo(costTooltip);
+				var costKey = $("<div>").addClass('row_key').text(_(k));
+				Icons.prepend(costKey, k);   // 成本里的材料也带图标，一眼看出要攒什么
+				costKey.appendTo(costTooltip);
 				$("<div>").addClass('row_val').text(options.cost[k]).appendTo(costTooltip);
 			}
 			if(costTooltip.children().length > 0) {

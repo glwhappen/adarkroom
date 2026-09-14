@@ -253,7 +253,9 @@ var Path = {
 	createOutfittingRow: function(key, num, store) {
 		if(!store.name) store.name = _(key);
 		var row = $('<div>').attr('id', 'outfit_row_' + key.replace(' ', '-')).addClass('outfitRow').attr('key',key);
-		$('<div>').addClass('row_key').text(store.name).appendTo(row);
+		var oKey = $('<div>').addClass('row_key').text(store.name);
+		Icons.prepend(oKey, key);
+		oKey.appendTo(row);
 		var val = $('<div>').addClass('row_val').appendTo(row);
 		
 		$('<span>').text(num).appendTo(val);

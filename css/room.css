@@ -4,6 +4,41 @@ div#buildBtns {
 	left: 0px;
 }
 
+/* 火堆状态（常驻显示）：档位条 + 档位名 + 一句提示。
+   ⚠️ 必须绝对定位：面板本身只有一行按钮那么高（38px），在流内插块级元素会把面板撑高、
+   影响 locationSlider 的几何。位置取「生火/添柴按钮右边、库存盒左边」那段空位。 */
+div#fireStatus {
+	position: absolute;
+	left: 150px;
+	top: 3px;
+	width: 220px;
+	pointer-events: none;
+}
+
+div#fireStatus span.fireStatus__cell {
+	display: inline-block;
+	width: 7px;
+	height: 12px;
+	margin-left: 3px;
+	border: 1px solid #b2b2b2;
+	vertical-align: -1px;
+}
+
+div#fireStatus span.fireStatus__cell.on {
+	background: black;
+	border-color: black;
+}
+
+div#fireStatus span.fireStatus__name {
+	margin-left: 7px;
+}
+
+div#fireStatus div.fireStatus__hint {
+	color: #b2b2b2;
+	font-size: 14px;
+	margin-top: 2px;
+}
+
 div#buildBtns:before, div#craftBtns:before, div#buyBtns:before {
 	content: attr(data-legend);
 	position: relative;
@@ -42,7 +77,8 @@ div#stores {
 	border: 1px solid black;
 	cursor: default;
 	padding: 5px 10px;
-	width: 200px;
+	/* 200 -> 215：行首多了图标，窄了会挤着右边的数字 */
+	width: 215px;
 }
 
 div.storeRow {
@@ -56,5 +92,5 @@ div#weapons {
 	border: 1px solid black;
 	cursor: default;
 	padding: 5px 10px;
-	width: 200px;
+	width: 215px;
 }

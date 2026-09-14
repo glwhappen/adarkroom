@@ -365,7 +365,9 @@ var Outside = {
 		var income = Outside._INCOME[key];
 		for(var s in income.stores) {
 			var r = $('<div>').addClass('storeRow');
-			$('<div>').addClass('row_key').text(_(s)).appendTo(r);
+			var rKey = $('<div>').addClass('row_key').text(_(s));
+			Icons.prepend(rKey, s);
+			rKey.appendTo(r);
 			$('<div>').addClass('row_val').text(Engine.getIncomeMsg(income.stores[s], income.delay)).appendTo(r);
 			r.appendTo(tooltip);
 		}
@@ -397,7 +399,9 @@ var Outside = {
 		var row = $('div#' + id, village);
 		if(row.length === 0 && num > 0) {
 			row = $('<div>').attr('id', id).addClass('storeRow');
-			$('<div>').addClass('row_key').text(lname).appendTo(row);
+			var vKey = $('<div>').addClass('row_key').text(lname);
+			Icons.prepend(vKey, name);   // 村里的建筑也带图标
+			vKey.appendTo(row);
 			$('<div>').addClass('row_val').text(num).appendTo(row);
 			$('<div>').addClass('clear').appendTo(row);
 			var curPrev = null;
@@ -518,7 +522,9 @@ var Outside = {
 					stores[store] = income.stores[store] * num;
 					if(curIncome[store] != stores[store]) needsUpdate = true;
 					var row = $('<div>').addClass('storeRow');
-					$('<div>').addClass('row_key').text(_(store)).appendTo(row);
+					var sKey = $('<div>').addClass('row_key').text(_(store));
+					Icons.prepend(sKey, store);
+					sKey.appendTo(row);
 					$('<div>').addClass('row_val').text(Engine.getIncomeMsg(stores[store], income.delay)).appendTo(row);
 					row.appendTo(tooltip);
 				}

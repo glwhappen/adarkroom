@@ -11,3 +11,4 @@ img/Thumbs.db
 # multiplayer server
 server/node_modules/
 server/.env
+tools/.icon-cache/

@@ -26,10 +26,22 @@
 	<script>
 		// 站名覆盖：民间译名「小黑屋」在中文里是「关禁闭」的意思，本站叫「篝火」。
 		// 必须在语言包（下面 document.write 的 strings.js）加载前挂上钩子。
+		// 新加的界面文案也在这里补中文：不动 lang/ 下由 .po 生成的语言包（重生成会被覆盖），
+		// 文案在代码里仍用 _('英文原文') 包着，换语言时能自己退回英文。
 		(function () {
 			var orig = _.setTranslation;
 			_.setTranslation = function (table) {
 				table['A Dark Room'] = '篝火';
+				if (table['light fire'] === '生火') {   // 是中文语言包
+					var zh = {
+						'fire': '火堆',
+						'the fire is out, light it again (5 wood)': '火堆灭了，得重新生火（5 木头）',
+						'no wood left, the fire will burn out': '没木头了，火会慢慢熄掉',
+						'the fire is dying, stoke it': '火快灭了，该添柴了',
+						'builder keeps the fire going for you': '建造者会替你添柴，火不用管'
+					};
+					for (var k in zh) table[k] = zh[k];
+				}
 				return orig.call(_, table);
 			};
 		})();
@@ -55,6 +67,8 @@
 		}
 	</script>
 	
+	<script src="script/icon-names.js"></script>
+	<script src="script/icons.js"></script>
 	<script src="script/Button.js"></script>
 	<script src="script/audioLibrary.js"></script>
 	<script src="script/audio.js"></script>
@@ -91,6 +105,7 @@
 	<![endif]-->
 	
 	<link rel="stylesheet" type="text/css" href="css/main.css" />
+	<link rel="stylesheet" type="text/css" href="css/icons.css" />
 	<link rel="stylesheet" type="text/css" href="css/room.css" />
 	<link rel="stylesheet" type="text/css" href="css/outside.css" />
 	<link rel="stylesheet" type="text/css" href="css/path.css" />

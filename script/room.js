@@ -547,6 +547,9 @@ var Room = {
 			cost: { 'wood': 1 }
 		}).appendTo('div#roomPanel');
 
+		// 火堆状态（常驻显示）：档位条 + 档位名 + 一句“要不要动手”的提示，内容见 Room.updateFireView
+		$('<div>').attr('id', 'fireStatus').appendTo('div#roomPanel');
+
 		// Create the stores container
 		$('<div>').attr('id', 'storesContainer').prependTo('div#roomPanel');
 
@@ -557,6 +560,7 @@ var Room = {
 		Room.updateStoresView();
 		Room.updateIncomeView();
 		Room.updateBuildButtons();
+		Room.updateFireView();
 
 		Room._fireTimer = Engine.setTimeout(Room.coolFire, Room._FIRE_COOL_DELAY);
 		Room._tempTimer = Engine.setTimeout(Room.adjustTemp, Room._ROOM_WARM_DELAY);
@@ -601,7 +605,8 @@ var Room = {
 		}
 
 		Engine.moveStoresView(null, transition_diff);
-		
+
+		Room.updateFireView();
 		Room.setMusic();
 	},
 
@@ -643,6 +648,48 @@ var Room = {
 			document.title = title;
 		}
 		$('div#location_room').text(title);
+	},
+	// 火堆状态常驻显示。
+	// 为什么：火的档位原来只靠一条会淡出的通知（“火堆燃烧着”）说一次，玩家看不出
+	// 火还剩几档、到底要不要添柴（用户 2026-09-15 报的）。
+	// ⚠️ 提示的判定必须跟 coolFire 的实际行为一致，别另写一套规则：
+	//   coolFire 里「火 ≤ 2 且 builder.level > 3 且 wood > 0」时，每 5 分钟会有人
+	//   替玩家添一根柴、火位保持不变；否则火就是每 5 分钟掉一档。
+	updateFireView: function () {
+		var el = $('#fireStatus');
+		if (el.length === 0) return;
+
+		var fire = $SM.get('game.fire.value', true) || 0;
+		var wood = $SM.get('stores.wood', true) || 0;
+		var helping = $SM.get('game.builder.level', true) > 3; // >3 = 建造者在（会替玩家续柴）
+		var fireEnum = Room.FireEnum.fromInt(fire);
+
+		var hint;
+		if (fire === 0) {
+			hint = _('the fire is out, light it again (5 wood)');
+		} else if (wood <= 0) {
+			hint = _('no wood left, the fire will burn out');
+		} else if (fire <= Room.FireEnum.Flickering.value) {
+			hint = helping ? _('builder keeps the fire going for you') : _('the fire is dying, stoke it');
+		} else {
+			hint = '';
+		}
+
+		// 每秒都会被叫到（income 事件），内容没变就不要碰 DOM
+		var sig = fire + '|' + hint;
+		if (el.data('sig') === sig) return;
+		el.data('sig', sig);
+
+		var line = $('<div>').addClass('fireStatus__line')
+			.append($('<span>').addClass('fireStatus__key').text(_('fire')));
+		// 4 格 = 火的 4 个活档（冒烟/火苗/燃烧/熊熊），熄了就是空条
+		for (var i = 1; i <= 4; i++) {
+			$('<span>').addClass('fireStatus__cell' + (i <= fire ? ' on' : '')).appendTo(line);
+		}
+		line.append($('<span>').addClass('fireStatus__name').text(fireEnum ? fireEnum.text : ''));
+
+		el.empty().append(line);
+		if (hint) $('<div>').addClass('fireStatus__hint').text(hint).appendTo(el);
 	},
 
 	updateButton: function () {
@@ -718,6 +765,7 @@ var Room = {
 		Room._fireTimer = Engine.setTimeout(Room.coolFire, Room._FIRE_COOL_DELAY);
 		Room.updateButton();
 		Room.setTitle();
+		Room.updateFireView();
 
 		// only update music if in the room
 		if (Engine.activeModule == Room) {
@@ -889,12 +937,15 @@ var Room = {
 
 			if (row.length === 0) {
 				row = $('<div>').attr('id', id).addClass('storeRow');
-				$('<div>').addClass('row_key').text(lk).appendTo(row);
+				var rowKey = $('<div>').addClass('row_key').text(lk);
+				Icons.prepend(rowKey, k);   // 物品名前面挂图标（没配图标的物品就还是纯文字）
+				rowKey.appendTo(row);
 				$('<div>').addClass('row_val').text(Room.formatStore(num, location === resources)).appendTo(row);
 				$('<div>').addClass('clear').appendTo(row);
 				var curPrev = null;
 				location.children().each(function (i) {
 					var child = $(this);
+					// 图标是 svg、不含文本，所以 .text() 拿到的仍然是干净的物品名
 					var cName = child.children('.row_key').text();
 					if (cName < lk) {
 						curPrev = child.attr('id');
@@ -1191,6 +1242,7 @@ var Room = {
 						id: 'build_' + k.replace(/ /g, '-'),
 						cost: craftable.cost(),
 						text: _(k),
+						icon: k,
 						click: Room.build,
 						width: '80px',
 						ttPos: loc.children().length > 10 ? 'top right' : 'bottom right'
@@ -1202,7 +1254,9 @@ var Room = {
 				costTooltip.empty();
 				var cost = craftable.cost();
 				for (var c in cost) {
-					$("<div>").addClass('row_key').text(_(c)).appendTo(costTooltip);
+					var cKey = $("<div>").addClass('row_key').text(_(c));
+					Icons.prepend(cKey, c);
+					cKey.appendTo(costTooltip);
 					$("<div>").addClass('row_val').text(cost[c]).appendTo(costTooltip);
 				}
 				// 提示一次“已建满”。原来拿“按钮上有没有 .disabled”当“提示过没有”的代理，
@@ -1226,6 +1280,7 @@ var Room = {
 						id: 'build_' + g,
 						cost: good.cost(),
 						text: _(g),
+						icon: g,
 						click: Room.buy,
 						width: '80px',
 						ttPos: buySection.children().length > 10 ? 'top right' : 'bottom right'
@@ -1237,7 +1292,9 @@ var Room = {
 				goodsCostTooltip.empty();
 				var goodCost = good.cost();
 				for (var gc in goodCost) {
-					$("<div>").addClass('row_key').text(_(gc)).appendTo(goodsCostTooltip);
+					var gKey = $("<div>").addClass('row_key').text(_(gc));
+					Icons.prepend(gKey, gc);
+					gKey.appendTo(goodsCostTooltip);
 					$("<div>").addClass('row_val').text(goodCost[gc]).appendTo(goodsCostTooltip);
 				}
 				if (goodsMax && !good.button.data('wasMax')) {
@@ -1272,10 +1329,12 @@ var Room = {
 		if (e.category == 'stores') {
 			Room.updateStoresView();
 			Room.updateBuildButtons();
+			Room.updateFireView();   // 柴的多少会改变提示（没柴了火会熄）
 		} else if (e.category == 'income') {
 			Room.updateStoresView();
 			Room.updateIncomeView();
 			Room.updateBuildAffordability();   // 材料够了要立刻能点（收入逐秒累积，不到这里重算就一直灰着）
+			Room.updateFireView();
 		} else if (e.stateName.indexOf('game.buildings') === 0) {
 			Room.updateBuildButtons();
 		}
