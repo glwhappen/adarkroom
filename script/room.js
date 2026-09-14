@@ -792,6 +792,15 @@ var Room = {
 		Engine.saveGame();
 	},
 
+	// 库存数字的显示格式：收入是逐秒累积的（见 $SM.collectIncome），
+	// 整数就不带小数（木材攒满 100 显示 100），有零头才显示两位小数（100.40）
+	formatStore: function (num) {
+		if (typeof num != 'number' || isNaN(num)) return '0';
+		var rounded = Math.round(num * 100) / 100;
+		if (rounded % 1 === 0) return String(rounded);
+		return rounded.toFixed(2);
+	},
+
 	updateStoresView: function () {
 		var stores = $('div#stores');
 		var resources = $('div#resources');
@@ -879,7 +888,7 @@ var Room = {
 			if (row.length === 0) {
 				row = $('<div>').attr('id', id).addClass('storeRow');
 				$('<div>').addClass('row_key').text(lk).appendTo(row);
-				$('<div>').addClass('row_val').text(Math.floor(num)).appendTo(row);
+				$('<div>').addClass('row_val').text(Room.formatStore(num)).appendTo(row);
 				$('<div>').addClass('clear').appendTo(row);
 				var curPrev = null;
 				location.children().each(function (i) {
@@ -896,7 +905,7 @@ var Room = {
 				}
 				newRow = true;
 			} else {
-				$('div#' + row.attr('id') + ' > div.row_val', location).text(Math.floor(num));
+				$('div#' + row.attr('id') + ' > div.row_val', location).text(Room.formatStore(num));
 			}
 		}
 

@@ -348,8 +348,13 @@ var StateManager = {
 		return {};
 	},
 
+	// 每秒结算一次收入。
+	// 口径：把「每份结算量 ÷ 间隔秒数」逐秒加进去（原来是攒够 delay 秒一次性加整份）。
+	// 为什么：库存数字才能连续增长、看得见在长（显示端保留两位小数，见 Room.formatStore）。
+	// 总量不变：逐秒累加 N 秒 == 原来每 delay 秒加一份。
+	// ⚠️ server/src/sim.js 的 collectIncomeTick 是这里的服务端镜像，改了这里必须同步。
 	collectIncome: function() {
-		var changed = false;
+		var changed = false, wrapped = false;
 		if(typeof $SM.get('income') != 'undefined' && Engine.activeModule != Space) {
 			for(var source in $SM.get('income')) {
 				var income = $SM.get('income["'+source+'"]');
@@ -357,36 +362,40 @@ var StateManager = {
 				{
 					income.timeLeft = 0;
 				}
-				income.timeLeft--;
+				var delay = (typeof income.delay == 'number' && income.delay > 0) ? income.delay : 1;
 
-				if(income.timeLeft <= 0) {
-					Engine.log('collection income from ' + source);
-					if(source == 'thieves') $SM.addStolen(income.stores);
+				// 这一秒的增量 = 每份 ÷ 间隔秒数
+				var delta = {};
+				for(var d in income.stores) {
+					delta[d] = income.stores[d] / delay;
+				}
 
-					var cost = income.stores;
+				if(source == 'thieves') {
+					$SM.addStolen(delta);
+				} else {
 					var ok = true;
-					if (source != 'thieves') {
-						for (var k in cost) {
-							var have = $SM.get('stores["' + k + '"]', true);
-							if (have + cost[k] < 0) {
-								ok = false;
-								break;
-							}
+					for (var k in delta) {
+						var have = $SM.get('stores["' + k + '"]', true);
+						if (have + delta[k] < 0) {
+							ok = false;
+							break;
 						}
 					}
+					if(!ok) delta = null;   // 付不起就这秒不加（与原来整笔跳过的口径一致）
+				}
+				if(delta) $SM.addM('stores', delta, true);
 
-					if(ok){
-						$SM.addM('stores', income.stores, true);
-					}
-					changed = true;
-					if(typeof income.delay == 'number') {
-						income.timeLeft = income.delay;
-					}
+				changed = true;
+				income.timeLeft--;
+				if(income.timeLeft <= 0) {
+					Engine.log('collection income from ' + source);
+					income.timeLeft = delay;
+					wrapped = true;   // 走满一个完整间隔：照原样存一次档
 				}
 			}
 		}
 		if(changed){
-			$SM.fireUpdate('income', true);
+			$SM.fireUpdate('income', wrapped);
 		}
 		Engine._incomeTimeout = Engine.setTimeout($SM.collectIncome, 1000);
 	},

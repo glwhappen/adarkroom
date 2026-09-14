@@ -34,7 +34,8 @@ const set = (state, path, value) => {
   cur[path[path.length - 1]] = value;
 };
 
-// $SM.collectIncome 的一次“收账”（客户端每秒 timeLeft--，<=0 时结算并复位）
+// $SM.collectIncome 的一次“收账”（客户端每秒结算一回）
+// 口径与客户端保持一致：每秒加「每份结算量 ÷ 间隔秒数」，库存不为负（$SM.set 会夹 0）
 function collectIncomeTick(state) {
   const income = get(state, ['income']);
   if (!income || typeof income !== 'object') return;
@@ -43,34 +44,38 @@ function collectIncomeTick(state) {
   for (const source of Object.keys(income)) {
     const inc = income[source];
     if (typeof inc.timeLeft !== 'number') inc.timeLeft = 0;
-    inc.timeLeft--;
-    if (inc.timeLeft > 0) continue;
+    const delay = typeof inc.delay === 'number' && inc.delay > 0 ? inc.delay : 1;
+
+    const delta = {};
+    for (const [k, v] of Object.entries(inc.stores || {})) delta[k] = v / delay;
 
     if (source === 'thieves') {
-      // addStolen：记录被偷量（以实际扣到 0 为止）
-      for (const [k, v] of Object.entries(inc.stores || {})) {
+      // addStolen：按“实际能偷到多少”记账（要拿更新前的库存算）
+      for (const [k, v] of Object.entries(delta)) {
         const have = stores[k] ?? 0;
         const short = have + v;
-        const stolen = short < 0 ? -v + short : -v;
-        set(state, ['game', 'stolen', k], (get(state, ['game', 'stolen', k], 0)) + stolen);
+        set(state, ['game', 'stolen', k], (get(state, ['game', 'stolen', k], 0)) + (short < 0 ? -v + short : -v));
       }
-      for (const [k, v] of Object.entries(inc.stores || {})) {
-        // 原版 $SM.add 不截断：库存可以被小偷偷成负数（addStolen 已记账）
-        stores[k] = (stores[k] ?? 0) + v;
-      }
+      applyDelta(stores, delta);
     } else {
-      // 非 thieves：任一项会扣成负数就整笔跳过（但 timeLeft 照样复位）
+      // 非 thieves：任一项会扣成负数就这秒不加（与客户端口径一致）
       let ok = true;
-      for (const [k, v] of Object.entries(inc.stores || {})) {
+      for (const [k, v] of Object.entries(delta)) {
         if ((stores[k] ?? 0) + v < 0) { ok = false; break; }
       }
-      if (ok) {
-        for (const [k, v] of Object.entries(inc.stores || {})) {
-          stores[k] = (stores[k] ?? 0) + v;
-        }
-      }
+      if (ok) applyDelta(stores, delta);
     }
-    if (typeof inc.delay === 'number') inc.timeLeft = inc.delay;
+
+    inc.timeLeft--;
+    if (inc.timeLeft <= 0) inc.timeLeft = delay;
+  }
+}
+
+// 等同客户端的 $SM.addM('stores', ...)：逐项相加，加完为负就夹到 0（$SM.set 的行为）
+function applyDelta(stores, delta) {
+  for (const [k, v] of Object.entries(delta)) {
+    const next = (stores[k] ?? 0) + v;
+    stores[k] = next < 0 ? 0 : next;
   }
 }
 
