@@ -22,8 +22,8 @@ npm install
 npm run dev
 ```
 
-前置：Authentik 里新建 Provider + Application（slug `adarkroom`，回调
-`https://game.hsfp.cn/auth/callback`），并执行迁移：
+前置：Authentik 里新建 Provider + Application（slug `campfire`（应用显示名「篝火」），回调
+`https://campfire.hsfp.cn/auth/callback`），并执行迁移：
 
 ```bash
 docker exec -i supabase-db psql -U postgres -d postgres -p 54322 < ../migrations/001_init.sql
