@@ -10,7 +10,9 @@
 var Icons = {
 	SVG_NS: 'http://www.w3.org/2000/svg',
 	XLINK_NS: 'http://www.w3.org/1999/xlink',
-	FILE: 'img/icons.svg',
+	// 末尾的 ?v= 是破缓存用的：改了图标重建 sprite 后，把这里 +1，
+	// 否则浏览器（尤其容器里带长缓存的）会拿着旧图不放。
+	FILE: 'img/icons.svg?v=1',
 
 	/** 物品 key -> CSS class 后缀（"energy cell" -> "energy-cell"） */
 	slug: function (key) {

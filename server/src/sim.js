@@ -14,7 +14,7 @@ const ROOM_WARM_DELAY = 30;          // room.js _ROOM_WARM_DELAY
 const POP_DELAY = [0.5, 3];          // outside.js _POP_DELAY（分钟）
 const HUT_ROOM = 4;                  // outside.js _HUT_ROOM
 const BUILDER_STOKE_LEVEL = 3;       // builder.level > 3 时帮添柴
-const FIRE_FLICKERING = 2;           // coolFire 里 builder 干预的阈值（<= Flickering(1) 用 < FLICKERING 表示）
+const FIRE_FLICKERING = 2;           // coolFire 里 builder 干预的阈值（客户端是 fire <= Flickering(2)）
 
 const get = (state, path, dflt) => {
   let cur = state;
@@ -87,7 +87,7 @@ function coolFireTick(state) {
   const builderLevel = game.builder?.level ?? 0;
   const wood = stores.wood ?? 0;
 
-  if (fire < FIRE_FLICKERING && builderLevel > BUILDER_STOKE_LEVEL && wood > 0) {
+  if (fire <= FIRE_FLICKERING && builderLevel > BUILDER_STOKE_LEVEL && wood > 0) {
     stores.wood = Math.max(0, wood - 1);   // 客户端的 $SM.set 会把负库存夹到 0，这里也得夹
     set(state, ['game', 'fire'], { value: fire + 1, text: '' });
   }

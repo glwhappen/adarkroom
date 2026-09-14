@@ -1,5 +1,5 @@
 {
-	"_comment": "库存/按钮图标清单：游戏内物品 key -> game-icons.net 图标（来源仓库 game-icons/icons，格式 <作者>/<图标名>.svg）。改完跑 node tools/fetch-icons.mjs 重新生成 img/icons.svg。下划线开头的 key 会被跳过；没有配图标的物品照旧只显示文字，不会报错。",
+	"_comment": "库存/按钮图标清单：游戏内物品 key -> game-icons.net 图标（来源仓库 game-icons/icons，格式 <作者>/<图标名>.svg）。改完跑 node tools/fetch-icons.mjs 重建 img/icons.svg 与 script/icon-names.js，再把 script/icons.js 里 FILE 的 ?v= 加 1 破缓存。下划线开头的 key 会被跳过；没配图标的物品照旧只显示文字，不会报错。",
 	"wood": "delapouite/wood-pile",
 	"fur": "delapouite/animal-hide",
 	"meat": "lorc/meat",
