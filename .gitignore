@@ -7,3 +7,7 @@ lang/.DS_Store
 .DS_Store
 node_modules
 img/Thumbs.db
+
+# multiplayer server
+server/node_modules/
+server/.env
