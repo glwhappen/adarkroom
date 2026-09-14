@@ -792,13 +792,15 @@ var Room = {
 		Engine.saveGame();
 	},
 
-	// 库存数字的显示格式：收入是逐秒累积的（见 $SM.collectIncome），
-	// 整数就不带小数（木材攒满 100 显示 100），有零头才显示两位小数（100.40）
-	formatStore: function (num) {
-		if (typeof num != 'number' || isNaN(num)) return '0';
-		var rounded = Math.round(num * 100) / 100;
-		if (rounded % 1 === 0) return String(rounded);
-		return rounded.toFixed(2);
+	// 库存数字的显示格式。
+	// 【资源】恒定两位小数，整数也写成 100.00：收入是逐秒累积的（见 $SM.collectIncome），
+	// 若整数就不写小数，每跨过一个整数都会少两位、数字宽度来回跳（“动来动去”）。
+	// 【武器/特殊物品】是离散件数，照旧显示整数（1 把斧头不写成 1.00）。
+	formatStore: function (num, isResource) {
+		if (typeof num != 'number' || isNaN(num)) return isResource ? '0.00' : '0';
+		var rounded = Math.round(num * 100) / 100;   // 去掉浮点尾巴，否则 toFixed 会拿到 99.9999999
+		if (isResource || rounded % 1 !== 0) return rounded.toFixed(2);
+		return String(rounded);
 	},
 
 	updateStoresView: function () {
@@ -888,7 +890,7 @@ var Room = {
 			if (row.length === 0) {
 				row = $('<div>').attr('id', id).addClass('storeRow');
 				$('<div>').addClass('row_key').text(lk).appendTo(row);
-				$('<div>').addClass('row_val').text(Room.formatStore(num)).appendTo(row);
+				$('<div>').addClass('row_val').text(Room.formatStore(num, location === resources)).appendTo(row);
 				$('<div>').addClass('clear').appendTo(row);
 				var curPrev = null;
 				location.children().each(function (i) {
@@ -905,7 +907,7 @@ var Room = {
 				}
 				newRow = true;
 			} else {
-				$('div#' + row.attr('id') + ' > div.row_val', location).text(Room.formatStore(num));
+				$('div#' + row.attr('id') + ' > div.row_val', location).text(Room.formatStore(num, location === resources));
 			}
 		}
 
