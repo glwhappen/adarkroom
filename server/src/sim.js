@@ -88,7 +88,7 @@ function coolFireTick(state) {
   const wood = stores.wood ?? 0;
 
   if (fire < FIRE_FLICKERING && builderLevel > BUILDER_STOKE_LEVEL && wood > 0) {
-    stores.wood = wood - 1;
+    stores.wood = Math.max(0, wood - 1);   // 客户端的 $SM.set 会把负库存夹到 0，这里也得夹
     set(state, ['game', 'fire'], { value: fire + 1, text: '' });
   }
   const cur = get(state, ['game', 'fire', 'value'], 0);
