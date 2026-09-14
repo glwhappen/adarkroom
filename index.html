@@ -16,12 +16,8 @@
 	<meta itemprop="name" property="og:title" content="A Dark Room" />
 	<link rel="shortcut icon" href="favicon.ico" />
 	<link rel="image_src" href="img/adr.png" />
-	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js"></script>
-	<script>
-		if(!window.jQuery) {
-			document.write('<script src="lib/jquery.min.js"><\/script>')
-		}
-	</script>
+	<!-- 自托管：直接用本地 jQuery，不再走 googleapis CDN（国内访问不稳，且会卡住整页解析） -->
+	<script src="lib/jquery.min.js"></script>
 	<script src="lib/jquery.color-2.1.2.min.js"></script>
 	<script src="lib/jquery.event.move.js"></script>
 	<script src="lib/jquery.event.swipe.js"></script>
@@ -63,6 +59,7 @@
   <script src="script/fabricator.js"></script>
 	<script src="script/prestige.js"></script>
 	<script src="script/scoring.js"></script>
+	<script src="script/village-viz.js?v=3"></script>
 	<!-- Event modules -->
 	<script src="script/events/global.js"></script>
 	<script src="script/events/room.js"></script>
