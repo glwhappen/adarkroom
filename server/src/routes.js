@@ -1,5 +1,5 @@
 // 存档 API：GET 返回惰性结算后的最新 State；PUT 接收客户端定期同步
-import { getSave, putSave } from './db.js';
+import { getSave, putSave, pool } from './db.js';
 import { requireSession } from './auth.js';
 import { advance } from './sim.js';
 
@@ -37,6 +37,14 @@ export async function stateRoutes(app) {
 
     await putSave(sess.sub, body.state);
     return { ok: true, savedAt: new Date().toISOString() };
+  });
+
+  // 删档（游戏内「重新开始」/清档走这里）
+  app.delete('/api/state', async (req, reply) => {
+    const sess = requireSession(req, reply);
+    if (!sess) return;
+    await pool.query('DELETE FROM adr.saves WHERE sub = $1', [sess.sub]);
+    return { ok: true, deleted: true };
   });
 
   app.get('/api/health', async () => {

@@ -32,8 +32,10 @@
 		// if no language requested, try to read it from local storage
 		if(!lang){
 			try {
-				lang = localStorage.lang;
-			} catch(e) {}
+				lang = localStorage.lang || 'zh_cn';   // 自托管默认中文
+			} catch(e) {
+				lang = 'zh_cn';
+			}
 		}
 		// if a language different than english requested, load all translations
 		if(lang && lang != 'en'){
@@ -46,6 +48,7 @@
 	<script src="script/audioLibrary.js"></script>
 	<script src="script/audio.js"></script>
 	<script src="script/engine.js"></script>
+	<script src="script/mp/sync.js?v=2"></script>
 	<script src="script/state_manager.js"></script>
 	<script src="script/header.js"></script>
 	<script src="script/notifications.js"></script>
@@ -86,16 +89,7 @@
   <link rel="stylesheet" type="text/css" href="css/fabricator.css" />
 	
 	<script src="script/localization.js"></script>
-	<!-- Google tag (gtag.js) -->
-	<script async src="https://www.googletagmanager.com/gtag/js?id=G-606P6J79WH"></script>
-	<script>
-		window.dataLayer = window.dataLayer || [];
-		function gtag(){dataLayer.push(arguments);}
-		gtag('js', new Date());
 
-		gtag('config', 'G-606P6J79WH');
-	</script>
-	
 </head>
 <body>
 	<div id="wrapper">
