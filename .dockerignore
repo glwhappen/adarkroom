@@ -1,0 +1,7 @@
+.git
+server/node_modules
+node_modules
+.secrets
+server/.env
+*.log
+tmp

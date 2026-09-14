@@ -1,0 +1,20 @@
+# 篝火 / campfire.hsfp.cn —— 多人版小黑屋
+# 只绑 172.17.0.1:4401，由 NPM 反代对外
+services:
+  campfire:
+    build: .
+    image: campfire:latest
+    container_name: campfire
+    restart: unless-stopped
+    env_file: server/.env
+    ports:
+      - "172.17.0.1:4401:4401"
+    networks:
+      - default
+      - supabase
+
+networks:
+  # 直连自建 Supabase 的 Postgres（宿主机 54322/54323 是 Supavisor，缺 tenant 标识连不上）
+  supabase:
+    name: supabase_default
+    external: true

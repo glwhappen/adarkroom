@@ -10,10 +10,10 @@
 		Inspired by Candy Box (https://candybox2.github.io/candybox)
 		Contribute on GitHub! (https://github.com/doublespeakgames/adarkroom/)
 	-->
-	<title>A Dark Room</title>
-	<meta itemprop="description" name="description" property="og:description" content="A minimalist text adventure">
+	<title>篝火</title>
+	<meta itemprop="description" name="description" property="og:description" content="一间暗室，一堆篝火，一个会一直烧下去的村子">
 	<meta itemprop="image" property="og:image" content="img/adr.png" />
-	<meta itemprop="name" property="og:title" content="A Dark Room" />
+	<meta itemprop="name" property="og:title" content="篝火" />
 	<link rel="shortcut icon" href="favicon.ico" />
 	<link rel="image_src" href="img/adr.png" />
 	<!-- 自托管：直接用本地 jQuery，不再走 googleapis CDN（国内访问不稳，且会卡住整页解析） -->
@@ -23,6 +23,17 @@
 	<script src="lib/jquery.event.swipe.js"></script>
 	<script src="lib/base64.js"></script>
 	<script src="lib/translate.js"></script>
+	<script>
+		// 站名覆盖：民间译名「小黑屋」在中文里是「关禁闭」的意思，本站叫「篝火」。
+		// 必须在语言包（下面 document.write 的 strings.js）加载前挂上钩子。
+		(function () {
+			var orig = _.setTranslation;
+			_.setTranslation = function (table) {
+				table['A Dark Room'] = '篝火';
+				return orig.call(_, table);
+			};
+		})();
+	</script>
 	
 	<script src="lang/langs.js"></script>
 	
