@@ -424,10 +424,16 @@ div.tooltip:hover {
 	display: none;
 }
 
-/* 因材料不够而变灰的建造/制造/购买按钮：造价提示照常显示
-   （上面那条会把它一起藏掉，玩家就只能看到一个抠不动的灰块，不知道还差多少） */
-div.button.disabled.cant-afford:hover > div.tooltip {
+/* 因材料不够或已建满而变灰的建造/制造/购买按钮：提示照常显示
+   （上面那条会把它一起藏掉，玩家就只能看到一个抠不动的灰块，不知道还差多少、是不是已经有了） */
+div.button.disabled.show-tooltip:hover > div.tooltip {
 	display: block;
+}
+
+/* 提示里“已有 N”那一行的文字缩进：造价行的文字前面有个图标（1.05em + 0.35em 右边距），
+   不带图标的那行得补上同样的缩进，两行左边缘才会齐齐的 */
+div.button div.tooltip div.row_key.owned {
+	padding-left: 1.4em;
 }
 
 #event .button.disabled:hover > div.tooltip {

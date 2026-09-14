@@ -1185,14 +1185,38 @@ var Room = {
 	},
 
 	// 按钮“能不能点”只有两个条件：没建满、材料够。
-	// 材料不够就直接变灰不可点，不再等玩家点了才弹 "not enough xxx"（带 cooldown 的按钮也一并拦）。
-	// ⚠️ main.css 里 `.disabled:hover > .tooltip` 会把造价提示一起藏掉，所以额外挂一个
-	// cant-afford 类把它放回来（玩家得能看到“还差多少”才有目标），见 main.css 同名规则。
+	// 不能点就直接变灰，不再等玩家点了才弹 "not enough xxx"（带 cooldown 的按钮也一并拦）。
+	// ⚠️ main.css 里 `.disabled:hover > .tooltip` 会把提示一起藏掉，所以给这类按钮挂
+	// show-tooltip 类把它放回来：提示里现在既有“还差多少”也有“已经有几个”，
+	// 玩家得看得到才能知道为什么灰，见 main.css 同名规则。
 	updateButtonState: function (btn, atMax, cost) {
 		if (!btn) return;
 		var affordable = Room.canAfford(cost);
-		btn.toggleClass('cant-afford', !atMax);
-		Button.setDisabled(btn, atMax || !affordable);
+		var disabled = atMax || !affordable;
+		btn.toggleClass('show-tooltip', disabled);
+		Button.setDisabled(btn, disabled);
+	},
+
+	// 重建建造/制造/购买按钮的提示：造价（带资源图标）+ 当前数量。
+	// 为什么要“当前数量”：按钮的灰/亮只说明“现在能不能造”，玩家看不出自己有几个、
+	// 离上限还差多少（小屋 20、陷阱 10 有上限；其余上限 1 的就是“有没有”）。
+	refreshCostTooltip: function (name, item, btn) {
+		if (!btn) return;
+		var tt = $('.tooltip', btn);
+		if (tt.length === 0) return;   // 没造价的按钮本来就没建 tooltip
+		tt.empty();
+		var cost = item.cost();
+		for (var c in cost) {
+			var cKey = $('<div>').addClass('row_key').text(_(c));
+			Icons.prepend(cKey, c);
+			cKey.appendTo(tt);
+			$('<div>').addClass('row_val').text(cost[c]).appendTo(tt);
+		}
+		var num = $SM.num(name, item) || 0;
+		$('<div>').addClass('row_key owned').text(_('owned')).appendTo(tt);
+		$('<div>').addClass('row_val owned')
+			.text(item.maximum > 1 ? num + ' / ' + item.maximum : String(num))   // 上限只有 1 的不写 "/1"
+			.appendTo(tt);
 	},
 
 	// 收入是逐秒累积的（$SM.collectIncome），不会触发 'stores' 事件，
@@ -1247,18 +1271,11 @@ var Room = {
 						width: '80px',
 						ttPos: loc.children().length > 10 ? 'top right' : 'bottom right'
 					}).css('opacity', 0).attr('buildThing', k).data('wasMax', max).appendTo(loc).animate({ opacity: 1 }, 300, 'linear');
+					Room.refreshCostTooltip(k, craftable, craftable.button);   // Button.js 只画了造价，补上“当前数量”
 				}
 			} else {
-				// refresh the tooltip
-				var costTooltip = $('.tooltip', craftable.button);
-				costTooltip.empty();
-				var cost = craftable.cost();
-				for (var c in cost) {
-					var cKey = $("<div>").addClass('row_key').text(_(c));
-					Icons.prepend(cKey, c);
-					cKey.appendTo(costTooltip);
-					$("<div>").addClass('row_val').text(cost[c]).appendTo(costTooltip);
-				}
+				// refresh the tooltip（造价 + 当前数量）
+				Room.refreshCostTooltip(k, craftable, craftable.button);
 				// 提示一次“已建满”。原来拿“按钮上有没有 .disabled”当“提示过没有”的代理，
 				// 现在材料不够也会 disabled，会把这句吞掉，所以改成自己记 wasMax
 				if (max && !craftable.button.data('wasMax')) {
@@ -1285,18 +1302,11 @@ var Room = {
 						width: '80px',
 						ttPos: buySection.children().length > 10 ? 'top right' : 'bottom right'
 					}).css('opacity', 0).attr('buildThing', g).data('wasMax', goodsMax).appendTo(buySection).animate({ opacity: 1 }, 300, 'linear');
+					Room.refreshCostTooltip(g, good, good.button);   // Button.js 只画了造价，补上“当前数量”
 				}
 			} else {
-				// refresh the tooltip
-				var goodsCostTooltip = $('.tooltip', good.button);
-				goodsCostTooltip.empty();
-				var goodCost = good.cost();
-				for (var gc in goodCost) {
-					var gKey = $("<div>").addClass('row_key').text(_(gc));
-					Icons.prepend(gKey, gc);
-					gKey.appendTo(goodsCostTooltip);
-					$("<div>").addClass('row_val').text(goodCost[gc]).appendTo(goodsCostTooltip);
-				}
+				// refresh the tooltip（造价 + 当前数量）
+				Room.refreshCostTooltip(g, good, good.button);
 				if (goodsMax && !good.button.data('wasMax')) {
 					Notifications.notify(Room, good.maxMsg);
 				}
