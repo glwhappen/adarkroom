@@ -1123,6 +1123,40 @@ var Room = {
 		return false;
 	},
 
+	// 材料够不够（建造/制造/购买共用）
+	canAfford: function (cost) {
+		for (var k in cost) {
+			if ($SM.get('stores["' + k + '"]', true) < cost[k]) return false;
+		}
+		return true;
+	},
+
+	// 按钮“能不能点”只有两个条件：没建满、材料够。
+	// 材料不够就直接变灰不可点，不再等玩家点了才弹 "not enough xxx"（带 cooldown 的按钮也一并拦）。
+	// ⚠️ main.css 里 `.disabled:hover > .tooltip` 会把造价提示一起藏掉，所以额外挂一个
+	// cant-afford 类把它放回来（玩家得能看到“还差多少”才有目标），见 main.css 同名规则。
+	updateButtonState: function (btn, atMax, cost) {
+		if (!btn) return;
+		var affordable = Room.canAfford(cost);
+		btn.toggleClass('cant-afford', !atMax);
+		Button.setDisabled(btn, atMax || !affordable);
+	},
+
+	// 收入是逐秒累积的（$SM.collectIncome），不会触发 'stores' 事件，
+	// 所以每秒得单独把“能不能点”重算一遍（只改 class，不重建 tooltip）
+	updateBuildAffordability: function () {
+		for (var k in Room.Craftables) {
+			var craftable = Room.Craftables[k];
+			if (!craftable.button) continue;
+			Room.updateButtonState(craftable.button, $SM.num(k, craftable) + 1 > craftable.maximum, craftable.cost());
+		}
+		for (var g in Room.TradeGoods) {
+			var good = Room.TradeGoods[g];
+			if (!good.button) continue;
+			Room.updateButtonState(good.button, $SM.num(g, good) + 1 > good.maximum, good.cost());
+		}
+	},
+
 	updateBuildButtons: function () {
 		var buildSection = $('#buildBtns');
 		var needsAppend = false;
@@ -1158,7 +1192,7 @@ var Room = {
 						click: Room.build,
 						width: '80px',
 						ttPos: loc.children().length > 10 ? 'top right' : 'bottom right'
-					}).css('opacity', 0).attr('buildThing', k).appendTo(loc).animate({ opacity: 1 }, 300, 'linear');
+					}).css('opacity', 0).attr('buildThing', k).data('wasMax', max).appendTo(loc).animate({ opacity: 1 }, 300, 'linear');
 				}
 			} else {
 				// refresh the tooltip
@@ -1169,14 +1203,15 @@ var Room = {
 					$("<div>").addClass('row_key').text(_(c)).appendTo(costTooltip);
 					$("<div>").addClass('row_val').text(cost[c]).appendTo(costTooltip);
 				}
-				if (max && !craftable.button.hasClass('disabled')) {
+				// 提示一次“已建满”。原来拿“按钮上有没有 .disabled”当“提示过没有”的代理，
+				// 现在材料不够也会 disabled，会把这句吞掉，所以改成自己记 wasMax
+				if (max && !craftable.button.data('wasMax')) {
 					Notifications.notify(Room, craftable.maxMsg);
 				}
 			}
-			if (max) {
-				Button.setDisabled(craftable.button, true);
-			} else {
-				Button.setDisabled(craftable.button, false);
+			if (craftable.button) {
+				craftable.button.data('wasMax', max);
+				Room.updateButtonState(craftable.button, max, craftable.cost());
 			}
 		}
 
@@ -1192,7 +1227,7 @@ var Room = {
 						click: Room.buy,
 						width: '80px',
 						ttPos: buySection.children().length > 10 ? 'top right' : 'bottom right'
-					}).css('opacity', 0).attr('buildThing', g).appendTo(buySection).animate({ opacity: 1 }, 300, 'linear');
+					}).css('opacity', 0).attr('buildThing', g).data('wasMax', goodsMax).appendTo(buySection).animate({ opacity: 1 }, 300, 'linear');
 				}
 			} else {
 				// refresh the tooltip
@@ -1203,14 +1238,13 @@ var Room = {
 					$("<div>").addClass('row_key').text(_(gc)).appendTo(goodsCostTooltip);
 					$("<div>").addClass('row_val').text(goodCost[gc]).appendTo(goodsCostTooltip);
 				}
-				if (goodsMax && !good.button.hasClass('disabled')) {
+				if (goodsMax && !good.button.data('wasMax')) {
 					Notifications.notify(Room, good.maxMsg);
 				}
 			}
-			if (goodsMax) {
-				Button.setDisabled(good.button, true);
-			} else {
-				Button.setDisabled(good.button, false);
+			if (good.button) {
+				good.button.data('wasMax', goodsMax);
+				Room.updateButtonState(good.button, goodsMax, good.cost());
 			}
 		}
 
@@ -1239,6 +1273,7 @@ var Room = {
 		} else if (e.category == 'income') {
 			Room.updateStoresView();
 			Room.updateIncomeView();
+			Room.updateBuildAffordability();   // 材料够了要立刻能点（收入逐秒累积，不到这里重算就一直灰着）
 		} else if (e.stateName.indexOf('game.buildings') === 0) {
 			Room.updateBuildButtons();
 		}
