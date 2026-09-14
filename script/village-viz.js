@@ -79,18 +79,18 @@
     if (level > 0) px(FIRE_X - 5, FIRE_BASE - 4, 11, 1, INK_SOFT);  // 烧红的一点底火
   }
 
-  // 火焰剪影：逐行堆叠，底部宽顶部尖，边缘随时间抖动
+  // 火焰剪影：逐行堆叠，线性收窄成锥形（底部宽、顶上尖），边缘随时间抖动
   function drawFlame(t, level) {
-    var h = Math.round(5 + level * 3.5);      // 1 档 8px ~ 4 档 19px（小屋高 14px）
-    var baseHalf = 2 + level * 0.8;           // 底部半宽 2.8 ~ 5.2
+    var h = Math.round(5 + level * 4);        // 1 档 9px ~ 4 档 21px（小屋高 14px）
+    var baseHalf = 2 + level * 0.7;           // 底部半宽 2.7 ~ 4.8（比高度窄，才像火苗）
     for (var row = 0; row < h; row++) {
       var frac = row / h;                     // 0=底 1=顶
-      var half = Math.max(1, Math.round(baseHalf * (1 - Math.pow(frac, 1.6))));
+      var half = Math.max(1, Math.round(baseHalf * (1 - frac) + 0.4));
       // 边缘摇曳：行越高抖得越厉害
       var jitter = Math.round(Math.sin(t / 130 + row * 0.9) * frac * 1.2);
       var flick = (Math.sin(t / 70 + row * 2.3) > 0.6 && frac > 0.5) ? 1 : 0;
       px(FIRE_X - half + jitter, FIRE_BASE - 4 - row, half * 2 + 1 - flick, 1,
-         frac > 0.65 ? INK_SOFT : INK);       // 顶部变淡
+         frac > 0.7 ? INK_SOFT : INK);       // 上半截变淡，像火苗的尖端
     }
 
     // 余烬上飘
